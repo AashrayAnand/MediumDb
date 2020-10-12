@@ -15,42 +15,45 @@ memtable::NumBytes()
 void 
 memtable::set(char* key, char* value)
 {
-    std::lock_guard<std::mutex> writerLock(tableMtx);
-    root = setHelp(root, new kvnode(key, value));
+    //std::lock_guard<std::mutex> writerLock(tableMtx);
+    root = setHelp(root, key, value);
 }
 
 kvnode*
-memtable::setHelp(kvnode* curr, kvnode* newEntry)
+memtable::setHelp(kvnode* curr, char* key, char* value)
 {
     if (curr == nullptr)
     {
         numEntries++;
-        numBytes += strlen(newEntry->Key());
-        numBytes += strlen(newEntry->Value());
-        return newEntry;
+        numBytes+= strlen(key);
+        numBytes+= strlen(value);
+        return new kvnode(key, value);
     }
 
-    if (curr > newEntry)
+    if (keyGreater(curr->Key(), key))
     {
-        curr->left = setHelp(curr->left, newEntry);
+        curr->left = setHelp(curr->left, key, value);
     }
-    else if (curr < newEntry)
+    else if (keyLess(curr->Key(), key))
     {
-        curr->right = setHelp(curr->right, newEntry);
+        curr->right = setHelp(curr->right, key, value);
     }
     else
     {
-        newEntry->left = curr->left;
-        newEntry->right = curr->right;
-        curr = newEntry;
+        std::cout << "repeat value " << key << std::endl;
+        kvnode* updatedEntry = new kvnode(key, value);
+        updatedEntry->left = curr->left;
+        updatedEntry->right = curr->right;
+        curr = updatedEntry;
     }
+
     return curr;
 }
     
 char*
 memtable::get(char* key)
 {
-    std::lock_guard<std::mutex> readerLock(tableMtx);
+    //std::lock_guard<std::mutex> readerLock(tableMtx);
     return getHelp(root, key);
 }
 
@@ -63,24 +66,21 @@ memtable::getHelp(kvnode* curr, char* key)
     }
 
     char* currKey = curr->Key();
-    int currKeyLen = strlen(currKey);
-    int searchKeyLen = strlen(key);
-    int strComp = strncasecmp(currKey, key, std::min(currKeyLen, searchKeyLen));
-    if (strComp == 0 && currKeyLen == searchKeyLen)
+    if (keyEqual(currKey, key))
     {
         return curr->Value();
     }
     
-    if (strComp > 0 || (strComp == 0 && currKeyLen > searchKeyLen))
+    if (keyGreater(currKey, key))
     {
         return getHelp(curr->left, key);
     }
-    if (strComp < 0 || (strComp == 0 && currKeyLen > searchKeyLen))
+    if (keyLess(currKey, key))
     {
         return getHelp(curr->right, key);
     }
 
-    return '\0';
+    return "\0";
 }
     
 void 

@@ -19,7 +19,8 @@ all: clean make_dir $(EXEC_NAME)
 
 test: clean make_dir
 	g++ $(STD) $(TEST)/main.cpp $(SRC)/kvnode.cpp $(SRC)/queryparser.cpp \
-	$(SRC)/memtable.cpp $(SRC)/queryexecutor.cpp -lgtest -o $(OUT)/$(TEST_EXEC)
+	$(SRC)/memtable.cpp $(SRC)/queryexecutor.cpp \
+	$(SRC)/utils.cpp -lgtest -o $(OUT)/$(TEST_EXEC)
 
 make_dir:
 	mkdir $(BIN)
@@ -40,5 +41,6 @@ objects:
 	$(GC) $(SRC)/memtable.cpp -o $(OUT)/memtable.o
 	$(GC) $(SRC)/queryparser.cpp -o $(OUT)/queryparser.o
 	$(GC) $(SRC)/queryexecutor.cpp -o $(OUT)/queryexecutor.o
+	$(GC) $(SRC)/utils.cpp -o $(OUT)/utils.o
 
 

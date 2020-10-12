@@ -1,12 +1,12 @@
 #include "../inc/kvnode.h"
 
-kvnode::kvnode(char* keyArg, char* valArg)
+kvnode::kvnode(char* keyArg, char* valArg):
+    left(nullptr),
+    right(nullptr)
 {
     // Get arg lengths
     int keyLen = strlen(keyArg);
-    std::cout << keyLen << std::endl;
     int valLen = strlen(valArg);
-    std::cout << valLen << std::endl;
 
     // Create buffer for key and copy key arg
     key = new char[keyLen];
@@ -39,15 +39,20 @@ kvnode::Value() const
 
 // Comparison operators
 
+// This key is equal to other key if strcmp is 0
+// and the string lengths are the same
+bool
+kvnode::operator==(const kvnode& other)
+{
+    return keyEqual(key, other.Key());
+}
+
 // This key is lesser than other key if strcmp is negative,
 // or if strcmp is zero and this key length is shorter than other
 bool
 kvnode::operator<(const kvnode& other)
 {
-    char* otherKey = other.Key();
-    int minKeyLength = std::min(strlen(key), strlen(otherKey));
-    int strComp = strncasecmp(key, otherKey, minKeyLength);
-    return strComp < 0 || (strComp == 0 && strlen(key) < strlen(otherKey));
+    return keyLess(key, other.Key());
 }
 
 // This key is greater than other key if strcmp is positive,
@@ -55,8 +60,5 @@ kvnode::operator<(const kvnode& other)
 bool
 kvnode::operator>(const kvnode& other)
 {
-    char* otherKey = other.Key();
-    int minKeyLength = std::min(strlen(key), strlen(otherKey));
-    int strComp = strncasecmp(key, otherKey, minKeyLength);
-    return strComp > 0 || (strComp == 0 && strlen(key) > strlen(otherKey));
+    return keyGreater(key, other.Key());
 }
